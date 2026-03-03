@@ -89,15 +89,39 @@ export default function TeacherScanPage() {
         event.preventDefault()
       }
 
+      // Warn before leaving while session is active
+      const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+        if (sessionActive) {
+          event.preventDefault()
+          event.returnValue = "You have an active attendance session. Are you sure you want to leave?"
+          return "You have an active attendance session. Are you sure you want to leave?"
+        }
+      }
+
+      // Handle navigation attempts
+      const handlePopState = (event: PopStateEvent) => {
+        if (sessionActive) {
+          // Prevent back button
+          event.preventDefault()
+          alert("Please end the attendance session before leaving this page.")
+          // Push current state again to stay on page
+          window.history.pushState(null, "", window.location.href)
+        }
+      }
+
       window.addEventListener("unhandledrejection", handleUnhandledRejection)
       window.addEventListener("error", handleError)
+      window.addEventListener("beforeunload", handleBeforeUnload)
+      window.addEventListener("popstate", handlePopState)
 
       return () => {
         window.removeEventListener("unhandledrejection", handleUnhandledRejection)
         window.removeEventListener("error", handleError)
+        window.removeEventListener("beforeunload", handleBeforeUnload)
+        window.removeEventListener("popstate", handlePopState)
       }
     }
-  }, [])
+  }, [sessionActive])
 
   // Use refs to track session state for periodic checks
   const sessionActiveRef = useRef(false)
@@ -186,13 +210,21 @@ export default function TeacherScanPage() {
 
   // Process scanned QR code - show confirmation modal first
   const processScanWithConfirmation = async (qrData: string) => {
-    if (!sessionId) return
+    // Debug: log the scan
+    console.log("[SCAN] Processing QR:", qrData)
+    
+    if (!sessionId) {
+      console.log("[SCAN] No session ID")
+      setError("No active session")
+      return
+    }
 
     // Prevent duplicate scans in quick succession
     const existingScan = scannedStudents.find(s => 
       qrData.includes(s.id.toString())
     )
     if (existingScan) {
+      console.log("[SCAN] Already scanned:", existingScan)
       setError("Already scanned!")
       setTimeout(() => setError(""), 3000)
       return
@@ -203,11 +235,13 @@ export default function TeacherScanPage() {
     const match = qrData.match(qrPattern)
     
     if (!match) {
+      console.log("[SCAN] Invalid QR format")
       setError("Invalid QR code format")
       return
     }
 
     const studentId = parseInt(match[1])
+    console.log("[SCAN] Student ID:", studentId)
 
     try {
       // Fetch student details from database
@@ -218,14 +252,16 @@ export default function TeacherScanPage() {
       const student = studentList.find((s: Student) => s.id === studentId)
       
       if (!student) {
+        console.log("[SCAN] Student not found in section")
         setError("Student not found in your section")
         setTimeout(() => setError(""), 3000)
         return
       }
 
-      // Check if already scanned
+      // Check if already scanned (double check)
       const alreadyScanned = scannedStudents.find(s => s.id === studentId)
       if (alreadyScanned) {
+        console.log("[SCAN] Already in scanned list:", alreadyScanned)
         setError(`${student.name} already marked as ${alreadyScanned.status}!`)
         setTimeout(() => setError(""), 3000)
         return
@@ -242,7 +278,7 @@ export default function TeacherScanPage() {
       setPendingQrData(qrData)
       setShowConfirmModal(true)
     } catch (err) {
-      console.error("Error fetching student:", err)
+      console.error("[SCAN] Error fetching student:", err)
       setError("Failed to validate student")
     }
   }
@@ -605,7 +641,10 @@ export default function TeacherScanPage() {
   }
 
   const processScan = async (qrData: string) => {
-    if (!sessionId) return
+    if (!sessionId) {
+      setError("No active session")
+      return
+    }
 
     // Prevent duplicate scans in quick succession
     const existingScan = scannedStudents.find(s => 
@@ -613,6 +652,7 @@ export default function TeacherScanPage() {
     )
     if (existingScan) {
       setError("Already scanned!")
+      setTimeout(() => setError(""), 3000)
       return
     }
 
@@ -626,6 +666,14 @@ export default function TeacherScanPage() {
         }),
       })
 
+      // Check if response is ok
+      if (!response.ok) {
+        const errorText = await response.text()
+        setError(`Scan failed: ${errorText}`)
+        setTimeout(() => setError(""), 3000)
+        return
+      }
+
       const data = await response.json()
 
       if (data.success) {
@@ -637,7 +685,14 @@ export default function TeacherScanPage() {
           status: data.status === "late" ? "late" : "present",
         }
 
-        setScannedStudents((prev) => [...prev, student])
+        // Add to scanned students list (using functional update to ensure we have latest state)
+        setScannedStudents(prev => {
+          // Check again to prevent duplicates
+          if (prev.some(s => s.id === student.id)) {
+            return prev
+          }
+          return [...prev, student]
+        })
         setLastScan(student)
         setSuccess(`${student.name} marked as ${student.status}!`)
         setError("")
@@ -648,16 +703,19 @@ export default function TeacherScanPage() {
           audio.play().catch(() => {})
         } catch {}
 
-        setTimeout(() => setSuccess(""), 3000)
+        // Keep success message longer and don't auto-clear
+        setTimeout(() => setSuccess(""), 5000)
       } else if (data.duplicate) {
-        setError(`${data.student.name} already checked in`)
+        setError(`${data.student?.name || "Student"} already checked in`)
         setTimeout(() => setError(""), 3000)
       } else {
         setError(data.error || "Invalid QR code")
+        setTimeout(() => setError(""), 3000)
       }
     } catch (err) {
       console.error("Scan error:", err)
       setError("Failed to process scan")
+      setTimeout(() => setError(""), 3000)
     }
   }
 
