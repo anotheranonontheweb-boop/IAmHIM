@@ -1,0 +1,302 @@
+================================================================================
+                    EDUTRACK PRO - QR ATTENDANCE SYSTEM
+                         CONCISE REVIEWER FOR TEAM
+================================================================================
+
+SYSTEM NAME: EduTrack Pro
+TYPE: QR Code-based Attendance Tracking System
+PLATFORM: Next.js (Frontend) + Supabase (Backend/Database)
+THEME: Dark/Light Mode Support
+
+================================================================================
+                              USER ROLES
+================================================================================
+
+1. ADMIN     → Full system access, manages all data
+2. TEACHER   → Manages attendance, students in their section
+3. STUDENT   → View QR code, attendance history, rewards
+
+================================================================================
+                        LOGIN PAGE (/)
+================================================================================
+
+- Unified login for all roles
+- Email & Password authentication
+- Auto-redirects based on user role after login
+- Demo credentials shown on login page
+
+================================================================================
+                         ADMIN PORTAL (/admin)
+================================================================================
+
+ADMIN DASHBOARD (/admin)
+------------------------
+- Overview statistics: Total Students, Teachers, Sections
+- Today's attendance breakdown: Present, Late, Absent
+- Recent activity feed
+- Point distribution controls (Present: 10pts, Late: 5pts default)
+- Quick action buttons for navigation
+
+ATTENDANCE (/admin/attendance)
+------------------------------
+- View all attendance sessions
+- Filter by date, section, status
+- Detailed attendance records with student info
+- Export/print attendance reports
+- Mark students as absent manually
+
+STUDENTS (/admin/students)
+--------------------------
+- View all registered students
+- Add/Edit/Delete student records
+- Assign students to sections
+- View student details and attendance history
+- Manage student accounts
+
+TEACHERS (/admin/teachers)
+--------------------------
+- View all teachers
+- Add/Edit/Delete teacher accounts
+- Assign subjects and sections to teachers
+- View teacher profiles
+
+SECTIONS (/admin/sections)
+--------------------------
+- Manage class sections (Grade 10-A, 11-A, etc.)
+- View students per section
+- Assign advisers (teachers) to sections
+
+REDEEM REWARDS (/admin/redeem)
+-----------------------------
+- Create and manage redeemable rewards
+- Set point costs for rewards
+- Track redemption history
+- View which students redeemed what
+
+================================================================================
+                       TEACHER PORTAL (/teacher)
+================================================================================
+
+TEACHER DASHBOARD (/teacher)
+---------------------------
+- Summary of assigned section students
+- Today's attendance: Present, Late, Absent counts
+- Recent attendance activity
+- Quick access to scan attendance
+
+QR SCAN ATTENDANCE (/teacher/scan)
+----------------------------------
+- Scan student QR codes to record attendance
+- Create new attendance sessions
+- Select existing active sessions
+- Real-time attendance list during scanning
+- View scanned students live
+- Manual attendance option
+- Auto-status: Early (<8AM), Present (8AM-10AM), Late (>10AM)
+
+ATTENDANCE MANAGEMENT (/teacher/attendance)
+-------------------------------------------
+- View all attendance sessions created by teacher
+- Session details with student records
+- Filter by date range
+- Mark individual students as present/late/absent
+
+CLASS RECORDS (/teacher/records)
+--------------------------------
+- View students in assigned section
+- Individual student attendance history
+- Student profiles with stats
+- Filter and search students
+
+CLASS OVERVIEW (/teacher/class)
+-------------------------------
+- Overview of assigned section
+- List of all students in class
+- Section statistics
+- Quick actions for each student
+
+PROFILE (/teacher/profile)
+---------------------------
+- View own teacher profile
+- Edit personal information
+- Change password
+- View assigned section/subject
+
+================================================================================
+                       STUDENT PORTAL (/student)
+================================================================================
+
+STUDENT DASHBOARD (/student)
+---------------------------
+- Personal stats: Points, Class Rank, Total Rank
+- Attendance streak counter
+- Quick access to QR code, rewards, history
+- Today's attendance status
+
+QR CODE DISPLAY (/student/qr)
+-----------------------------
+- Display personal permanent QR code
+- Format: STU:{userId}:SCHOOL2024
+- Can be printed on ID cards
+- QR never expires
+
+REWARDS (/student/rewards)
+-------------------------
+- View available rewards to redeem
+- See point costs for each reward
+- Redeem rewards using earned points
+- View redemption history
+
+ATTENDANCE HISTORY (/student/history)
+-------------------------------------
+- Personal attendance records
+- Filter by date range
+- Statistics: Present, Late, Absent counts
+- Attendance rate percentage
+
+PROFILE (/student/profile)
+--------------------------
+- View personal profile
+- View attendance statistics
+- Edit personal information
+- Change password
+- Display QR code option
+
+================================================================================
+                          SHARED PAGES
+================================================================================
+
+HOME (/home)
+------------
+- Landing page after login (role-based)
+- Quick stats and navigation
+- Role-specific welcome message
+
+PROFILE (/profile)
+------------------
+- Cross-role profile viewing
+- For teachers/admins to view student profiles
+- Attendance stats display
+- QR code display for students
+
+REWARDS (/rewards)
+------------------
+- Teacher/Admin version of rewards page
+- View all rewards catalog
+- Not for redemption (students redeem)
+
+LEADERBOARD (/leaderboard)
+--------------------------
+- Ranking of students by points
+- Class-wise and overall rankings
+- Top performers display
+- Points breakdown
+
+================================================================================
+                          KEY FEATURES
+================================================================================
+
+1. QR ATTENDANCE SYSTEM
+   - Permanent QR codes for each student
+   - Format: STU:{id}:SCHOOL2024
+   - Auto-status determination based on time
+   - Duplicate scan prevention
+
+2. POINTS SYSTEM
+   - Earn points for attendance (Present: 10pts, Late: 5pts)
+   - Redeem points for rewards
+   - Leaderboard rankings
+
+3. ATTENDANCE TRACKING
+   - Session-based attendance
+   - Real-time scanning
+   - History tracking
+   - Absence marking
+
+4. USER MANAGEMENT
+   - Role-based access control
+   - Admin: Full management
+   - Teacher: Section-based access
+   - Student: Personal data only
+
+5. DATABASE
+   - Supabase (PostgreSQL)
+   - Tables: users, sections, attendance_sessions, attendance_records, rewards
+
+================================================================================
+                         DEMO ACCOUNTS
+================================================================================
+
+ADMIN:
+  Email:    john.smith@school.edu
+  Password: teacher123
+
+TEACHER:
+  Email:    emily.johnson@school.edu
+  Password: teacher321
+  Section:  10-A
+
+STUDENT:
+  Email:    alex@example.com
+  Password: password
+  Section:  10-A
+
+================================================================================
+                           API ROUTES
+================================================================================
+
+Authentication:
+  POST /api/auth/login           - User login
+
+Attendance:
+  POST /api/attendance/scan      - Scan QR code
+  GET/POST /api/attendance/sessions     - Manage sessions
+  GET/DELETE /api/attendance/sessions/[id] - Session details
+  GET /api/attendance/history    - User attendance history
+  GET /api/attendance/stats     - Attendance statistics
+
+Admin:
+  GET/POST /api/admin/students  - Manage students
+  GET/POST /api/admin/teachers  - Manage teachers
+  GET/POST /api/admin/sections  - Manage sections
+  GET/POST /api/admin/redeem    - Manage rewards
+  GET/POST /api/admin/points/calculate - Calculate points
+  GET /api/admin/stats          - Dashboard stats
+
+Teacher:
+  GET/POST /api/teacher/attendance - Teacher attendance
+  GET /api/teacher/profile    - Teacher profile
+  GET /api/teacher/students   - Teacher's students
+
+Student:
+  GET /api/student/profile    - Student profile
+  GET /api/leaderboard       - Points leaderboard
+  GET /api/user/stats         - User statistics
+
+================================================================================
+                         TECHNICAL DETAILS
+================================================================================
+
+Frontend:
+  - Next.js 14 (App Router)
+  - React 18
+  - TypeScript
+  - Tailwind CSS
+  - Shadcn UI components
+
+Backend:
+  - Next.js API Routes
+  - Supabase (PostgreSQL)
+  - JWT-based authentication
+
+Database Tables:
+  - users (id, email, password, name, role, section_id, etc.)
+  - sections (id, name, grade, adviser_id)
+  - attendance_sessions (id, session_name, section_id, created_by, is_active)
+  - attendance_records (id, session_id, user_id, student_name, grade, status, scanned_at)
+  - rewards (id, name, description, points_cost, image_url)
+  - redemptions (id, user_id, reward_id, redeemed_at)
+
+================================================================================
+                              END
+================================================================================

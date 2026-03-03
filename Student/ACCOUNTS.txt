@@ -1,0 +1,112 @@
+=========================================
+EDUTRACK PRO - ACCOUNT CREDENTIALS
+=========================================
+
+LOGIN PAGE: http://localhost:3000
+
+=========================================
+ADMIN ACCOUNTS
+=========================================
+Email:    john.smith@school.edu
+Password: teacher123
+Role:     Admin
+Portal:   /admin
+
+=========================================
+TEACHER ACCOUNTS
+=========================================
+Email:    emily.johnson@school.edu
+Password: teacher321
+Role:     Teacher (Science)
+Section:  10-A (Adviser)
+Portal:   /teacher
+
+Email:    michael.brown@school.edu
+Password: teacher123
+Role:     Teacher (English)
+Section:  10-B (Adviser)
+Portal:   /teacher
+
+Email:    sarah.davis@school.edu
+Password: teacher123
+Role:     Teacher (History)
+Section:  11-A (Adviser)
+Portal:   /teacher
+
+=========================================
+STUDENT ACCOUNTS
+=========================================
+
+--- Section 10-A ---
+Name:     Alex Johnson
+Email:    alex@example.com
+Password: password
+Section:  10-A
+Portal:   /student
+
+Name:     Emma Davis
+Email:    emma@example.com
+Password: password
+Section:  10-A
+Portal:   /student
+
+Name:     Mike Chen
+Email:    mike@example.com
+Password: password
+Section:  10-A
+Portal:   /student
+
+Name:     Ava Thompson
+Email:    ava@test.com
+Password: password
+Section:  10-A
+Portal:   /student
+
+--- Section 10-B ---
+Name:     Sarah Williams
+Email:    sarah@example.com
+Password: password
+Section:  10-B
+Portal:   /student
+
+Name:     James Wilson
+Email:    james@example.com
+Password: password
+Section:  10-B
+Portal:   /student
+
+Name:     Sophia Lee
+Email:    sophia@test.com
+Password: password
+Section:  10-B
+Portal:   /student
+
+Name:     Liam Garcia
+Email:    liam@test.com
+Password: password
+Section:  10-B
+Portal:   /student
+
+--- Section 11-A ---
+Name:     Olivia Martinez
+Email:    olivia@test.com
+Password: password
+Section:  11-A
+Portal:   /student
+
+Name:     Noah Kim
+Email:    noah@test.com
+Password: password
+Section:  11-A
+Portal:   /student
+
+=========================================
+HOW TO LOGIN
+=========================================
+
+1. Go to the login page (http://localhost:3000)
+2. Enter any email and password from above
+3. You'll be redirected to your portal based on your role:
+   - Admin → /admin
+   - Teacher → /teacher
+   - Student → /student

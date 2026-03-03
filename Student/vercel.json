@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/points/calculate?key=edutrack-cron-secret-2024",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}
