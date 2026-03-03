@@ -155,7 +155,8 @@ export default function TeacherScanPage() {
           setTimeout(() => startCamera(), 500)
         } else {
           // No active session - clear localStorage if exists
-          localStorage.removeItem("activeSessionId")
+          // Note: We don't automatically clear - user should manually end sessions
+          console.log("No active session found")
         }
       } catch (err) {
         console.error("Failed to check existing session:", err)
@@ -165,6 +166,7 @@ export default function TeacherScanPage() {
     checkExistingSession()
     
     // Also check periodically if session is still active (every 30 seconds)
+    // This only shows a warning but does NOT automatically end the session
     intervalId = setInterval(async () => {
       // Use refs to get current values
       if (sessionActiveRef.current && sessionIdRef.current) {
@@ -173,13 +175,9 @@ export default function TeacherScanPage() {
           const data = await response.json()
           
           if (!data.sessions || data.sessions.length === 0 || data.sessions[0].id !== sessionIdRef.current) {
-            // Session was ended by someone else
-            setSessionActive(false)
-            setSessionId(null)
-            localStorage.removeItem("activeSessionId")
-            stopCamera()
-            setError("Session has ended")
-            setTimeout(() => setError(""), 5000)
+            // Session was ended by someone else - just show a warning
+            // Do NOT automatically end or redirect - let user decide
+            console.log("Warning: Session may have been ended elsewhere")
           }
         } catch (err) {
           console.error("Session check error:", err)
