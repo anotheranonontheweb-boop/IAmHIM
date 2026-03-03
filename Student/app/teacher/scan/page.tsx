@@ -165,28 +165,11 @@ export default function TeacherScanPage() {
     
     checkExistingSession()
     
-    // Also check periodically if session is still active (every 30 seconds)
-    // This only shows a warning but does NOT automatically end the session
-    intervalId = setInterval(async () => {
-      // Use refs to get current values
-      if (sessionActiveRef.current && sessionIdRef.current) {
-        try {
-          const response = await fetch(`/api/attendance/sessions?active=true&section=${localStorage.getItem("userSection") || "10-A"}`)
-          const data = await response.json()
-          
-          if (!data.sessions || data.sessions.length === 0 || data.sessions[0].id !== sessionIdRef.current) {
-            // Session was ended by someone else - just show a warning
-            // Do NOT automatically end or redirect - let user decide
-            console.log("Warning: Session may have been ended elsewhere")
-          }
-        } catch (err) {
-          console.error("Session check error:", err)
-        }
-      }
-    }, 30000)
+    // Note: We don't do periodic session checks anymore to avoid interference with scanning
+    // The session will remain active until the teacher explicitly clicks "End Session"
     
     return () => {
-      if (intervalId) clearInterval(intervalId)
+      // Cleanup on unmount
     }
   }, [])
 
@@ -228,6 +211,13 @@ export default function TeacherScanPage() {
       return
     }
 
+    // CRITICAL: Stop scanning while showing modal to prevent any double-processing
+    console.log("[SCAN] Stopping camera temporarily")
+    isScanning.current = false
+    if (scannerRef.current) {
+      scannerRef.current.pause()
+    }
+
     // Parse QR code to get student ID
     const qrPattern = /^STU:(\d+):SCHOOL2024$/
     const match = qrData.match(qrPattern)
@@ -235,6 +225,11 @@ export default function TeacherScanPage() {
     if (!match) {
       console.log("[SCAN] Invalid QR format")
       setError("Invalid QR code format")
+      // Resume scanning
+      isScanning.current = true
+      if (scannerRef.current) {
+        scannerRef.current.resume()
+      }
       return
     }
 
@@ -252,6 +247,11 @@ export default function TeacherScanPage() {
       if (!student) {
         console.log("[SCAN] Student not found in section")
         setError("Student not found in your section")
+        // Resume scanning
+        isScanning.current = true
+        if (scannerRef.current) {
+          scannerRef.current.resume()
+        }
         setTimeout(() => setError(""), 3000)
         return
       }
@@ -261,11 +261,16 @@ export default function TeacherScanPage() {
       if (alreadyScanned) {
         console.log("[SCAN] Already in scanned list:", alreadyScanned)
         setError(`${student.name} already marked as ${alreadyScanned.status}!`)
+        // Resume scanning
+        isScanning.current = true
+        if (scannerRef.current) {
+          scannerRef.current.resume()
+        }
         setTimeout(() => setError(""), 3000)
         return
       }
 
-      // Show confirmation modal
+      // Show confirmation modal - camera is now paused
       setPendingStudent({
         id: student.id,
         name: student.name,
@@ -278,6 +283,11 @@ export default function TeacherScanPage() {
     } catch (err) {
       console.error("[SCAN] Error fetching student:", err)
       setError("Failed to validate student")
+      // Resume scanning on error
+      isScanning.current = true
+      if (scannerRef.current) {
+        scannerRef.current.resume()
+      }
     }
   }
 
@@ -334,6 +344,18 @@ export default function TeacherScanPage() {
       setShowConfirmModal(false)
       setPendingStudent(null)
       setPendingQrData(null)
+      
+      // Resume the scanner so teacher can scan next student
+      console.log("[SCAN] Resuming scanner after confirmation")
+      isScanning.current = true
+      if (scannerRef.current) {
+        try {
+          scannerRef.current.resume()
+        } catch (e) {
+          console.log("[SCAN] Resume failed, restarting camera")
+          startCamera()
+        }
+      }
     }
   }
 
@@ -342,6 +364,18 @@ export default function TeacherScanPage() {
     setShowConfirmModal(false)
     setPendingStudent(null)
     setPendingQrData(null)
+    
+    // Resume the scanner so teacher can scan next student
+    console.log("[SCAN] Resuming scanner after cancel")
+    isScanning.current = true
+    if (scannerRef.current) {
+      try {
+        scannerRef.current.resume()
+      } catch (e) {
+        console.log("[SCAN] Resume failed, restarting camera")
+        startCamera()
+      }
+    }
   }
 
   const markStudentAttendance = async (studentId: number, studentName: string, grade: string, status: "present" | "late" | "absent", absentReasonData?: string, absenceTypeData?: string) => {
